@@ -2,9 +2,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using System.Collections.Generic;
 
-using Solvers;
+using AdventOfCode.Solvers;
+using AdventOfCode.Solvers.Day01;
 
-namespace Solvers.Test
+namespace AdventOfCode.Tests.Solvers.Day01
 {
   [TestClass]
   public class Day01SolverUnit

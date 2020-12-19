@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Solvers
+namespace AdventOfCode.Solvers
 {
   public interface Solver
   {

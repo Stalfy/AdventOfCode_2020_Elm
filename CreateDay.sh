@@ -5,8 +5,8 @@ if [ $# -ne 1 ]; then
   exit
 fi
 
-SOLVER_DIR=./Solvers/Day$1
-TEST_DIR=./Solvers.Test/Day$1
+SOLVER_DIR=./AdventOfCode/Solvers/Day$1
+TEST_DIR=./AdventOfCode.Tests/Solvers/Day$1
 
 SOLVER_PATH=$SOLVER_DIR/Day$1Solver.cs
 TEST_PATH=$TEST_DIR/Day$1SolverUnit.cs
@@ -19,7 +19,7 @@ echo "using System;"                                           >> $SOLVER_PATH
 echo "using System.Collections.Generic;"                       >> $SOLVER_PATH
 echo "using System.Linq;"                                      >> $SOLVER_PATH
 echo ""                                                        >> $SOLVER_PATH
-echo "namespace Solvers"                                       >> $SOLVER_PATH
+echo "namespace AdventOfCode.Solvers.Day$1"                    >> $SOLVER_PATH
 echo "{"                                                       >> $SOLVER_PATH
 echo "  public class Day$1Solver : Solver"                     >> $SOLVER_PATH
 echo "  {"                                                     >> $SOLVER_PATH
@@ -41,8 +41,9 @@ echo ""                                                      >> $TEST_PATH
 echo "using System.Collections.Generic;"                     >> $TEST_PATH
 echo ""                                                      >> $TEST_PATH
 echo "using Solvers;"                                        >> $TEST_PATH
+echo "using Solvers.Day$1;"                                  >> $TEST_PATH
 echo ""                                                      >> $TEST_PATH
-echo "namespace Solvers.Test"                                >> $TEST_PATH
+echo "namespace AdventOfCode.Tests.Solvers.Day$1"            >> $TEST_PATH
 echo "{"                                                     >> $TEST_PATH
 echo "  [TestClass]"                                         >> $TEST_PATH
 echo "  public class Day$1SolverUnit"                        >> $TEST_PATH
