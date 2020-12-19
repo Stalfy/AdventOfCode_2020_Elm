@@ -34,7 +34,7 @@ namespace AdventOfCode
           }
 
           string puzzleFileName = string.Format("Day{0:D2}.txt", day);
-          string puzzleFilePath = Path.Combine("..", "Puzzles", puzzleFileName);
+          string puzzleFilePath = Path.Combine(".", "Puzzles", puzzleFileName);
           Console.WriteLine(puzzleFilePath);
           if (!File.Exists(puzzleFilePath))
           {
@@ -64,7 +64,7 @@ namespace AdventOfCode
 
           try
           {
-            string typeName = string.Format("Solvers.Day{0:D2}.Day{0:D2}Solver", day);
+            string typeName = string.Format("AdventOfCode.Solvers.Day{0:D2}.Day{0:D2}Solver", day);
             Assembly assembly = Assembly.GetExecutingAssembly();
             Type type = assembly.GetType(typeName, true);
             solver = Activator.CreateInstance(type) as Solver;
