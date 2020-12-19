@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.IO;
 using System.Reflection;
@@ -49,11 +50,29 @@ namespace AdventOfCode
             return -1;
           }
           
+          // Initialisation.
+          TimeSpan ts;
+          string solution;
+          Stopwatch stopwatch = new Stopwatch();
           List<string> input = PuzzleReader.GetInputLines(puzzleFilePath).ToList();
-          input.ForEach(Console.WriteLine);
 
+          // Part 1.
+          stopwatch.Start();
+          solution = solver.SolvePartA(input);
+          stopwatch.Stop();
+          
+          ts = stopwatch.Elapsed;
+          Console.WriteLine($"Part 1: {solution}");
+          Console.WriteLine("Time 1: {0:D2}.{1:D3} seconds.", ts.Seconds, ts.Milliseconds);
 
-          Console.WriteLine("Hello World!");
+          // Part 2.
+          stopwatch.Restart();
+          solution = solver.SolvePartB(input);
+          stopwatch.Stop();
+
+          ts = stopwatch.Elapsed;
+          Console.WriteLine($"Part 2: {solution}");
+          Console.WriteLine("Time 2: {0:D2}.{1:D3} seconds.", ts.Seconds, ts.Milliseconds);
 
           return 0;
         }
