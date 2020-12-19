@@ -14,16 +14,34 @@ namespace AdventOfCode.Tests.Solvers.Day01
     public void TestSolvePartA()
     {
       Solver s = new Day01Solver();
-      IEnumerable<string> input = new List<string>();
-      Assert.AreEqual("A", s.SolvePartA(input));
+      IEnumerable<string> input = new List<string>
+      {
+        "1721",
+        "979",
+        "366",
+        "299",
+        "675",
+        "1456"
+      };
+
+      Assert.AreEqual("514579", s.SolvePartA(input));
     }
 
     [TestMethod]
     public void TestSolvePartB()
     {
       Solver s = new Day01Solver();
-      IEnumerable<string> input = new List<string>();
-      Assert.AreEqual("B", s.SolvePartB(input));
+      IEnumerable<string> input = new List<string>
+      {
+        "1721",
+        "979",
+        "366",
+        "299",
+        "675",
+        "1456"
+      };
+
+      Assert.AreEqual("241861950", s.SolvePartB(input));
     }
   }
 }

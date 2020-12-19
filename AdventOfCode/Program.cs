@@ -34,9 +34,16 @@ namespace AdventOfCode
             return -1;
           }
 
+          string assemblyLocation = Assembly.GetAssembly(typeof(Program)).Location;
+          string projectRootDirectory = Directory
+            .GetParent(assemblyLocation)
+            .Parent
+            .Parent
+            .Parent
+            .FullName;
+
           string puzzleFileName = string.Format("Day{0:D2}.txt", day);
-          string puzzleFilePath = Path.Combine(".", "Puzzles", puzzleFileName);
-          Console.WriteLine(puzzleFilePath);
+          string puzzleFilePath = Path.Combine(projectRootDirectory, "Puzzles", puzzleFileName);
           if (!File.Exists(puzzleFilePath))
           {
             Console.WriteLine("Puzzle Input Not Found.");

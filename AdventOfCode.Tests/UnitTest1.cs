@@ -1,6 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Solvers.Test
+namespace AdventOfCode.Tests
 {
     [TestClass]
     public class UnitTest1
