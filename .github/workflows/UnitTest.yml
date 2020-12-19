@@ -12,11 +12,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main
-      - name: Setup .Net 5.x 
+      - name: Setup .Net 5.0 
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '5.x'
-      - name: Build with .Net 5.x
+          dotnet-version: '5.0'
+      - name: Build with .Net 5.0
         run: dotnet build --configuration Release
       - name: Run unit tests.
         run: dotnet test
