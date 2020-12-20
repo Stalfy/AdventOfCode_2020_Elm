@@ -12,7 +12,7 @@ namespace AdventOfCode
 {
     public class Program
     {
-        const byte MAX_DAY = 02;
+        const byte MAX_DAY = 03;
 
         public static int Main(string[] args)
         {
