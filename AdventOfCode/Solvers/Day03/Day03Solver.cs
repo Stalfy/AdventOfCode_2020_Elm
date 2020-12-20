@@ -13,7 +13,19 @@ namespace AdventOfCode.Solvers.Day03
 
     public string SolvePartB(IEnumerable<string> input)
     {
-      return "B";
+      var tuple = ParseInput(input);
+
+      return new List<Tuple<int, int>>
+      {
+        Tuple.Create(1, 1),
+        Tuple.Create(3, 1),
+        Tuple.Create(5, 1),
+        Tuple.Create(7, 1),
+        Tuple.Create(1, 2)
+      }
+      .Select(slope => CountTreeCollisions(tuple, slope.Item1, slope.Item2))
+      .Aggregate<int, int>(1, (total, next) => total = total * next)
+      .ToString();
     }
 
     private string CreateCoordinate(int x, int y) => $"{x},{y}";
@@ -51,7 +63,7 @@ namespace AdventOfCode.Solvers.Day03
       while (y < tuple.Item3)
       {
         x = (x + xStep) % tuple.Item2;
-        y++;
+        y += yStep;
 
         collisions += tuple.Item1.Contains(CreateCoordinate(x, y)) ? 1 : 0;
       }

@@ -51,7 +51,7 @@ namespace AdventOfCode.Tests.Solvers.Day03
         ".#..#...#.#",
       };
 
-      Assert.AreEqual("B", s.SolvePartB(input));
+      Assert.AreEqual("336", s.SolvePartB(input));
     }
   }
 }
