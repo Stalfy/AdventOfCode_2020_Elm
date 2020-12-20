@@ -9,18 +9,15 @@ namespace AdventOfCode.Solvers.Day02
   {
     public string SolvePartA(IEnumerable<string> input)
     {
-      string pattern = "^(\\d+)-(\\d+) (\\w{1}): (\\w+)$";
-      Regex regex = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-
-      return input
-        .Select(line => regex.Match(line))
-        .Where(match => match.Success)
-        .Select(match => ParseMatchEntry(match))
-        .Count(IsValidCharacterCount)
-        .ToString();
+      return CountValidEntries(input, IsValidCharacterCount).ToString();
     }
 
     public string SolvePartB(IEnumerable<string> input)
+    {
+      return CountValidEntries(input, IsSingleMatchingCharacter).ToString();
+    }
+
+    private int CountValidEntries(IEnumerable<string> input, Predicate<Entry>predicate)
     {
       string pattern = "^(\\d+)-(\\d+) (\\w{1}): (\\w+)$";
       Regex regex = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
@@ -29,8 +26,7 @@ namespace AdventOfCode.Solvers.Day02
         .Select(line => regex.Match(line))
         .Where(match => match.Success)
         .Select(match => ParseMatchEntry(match))
-        .Count(IsSingleMatchingCharacter)
-        .ToString();
+        .Count(entry => predicate(entry));
     }
 
     private Entry ParseMatchEntry(Match match)
