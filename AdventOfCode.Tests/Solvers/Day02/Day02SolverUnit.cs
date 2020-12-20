@@ -28,8 +28,13 @@ namespace AdventOfCode.Tests.Solvers.Day02
     public void TestSolvePartB()
     {
       Solver s = new Day02Solver();
-      IEnumerable<string> input = new List<string>();
-      Assert.AreEqual("B", s.SolvePartB(input));
+      IEnumerable<string> input = new List<string>
+      {
+        "1-3 a: abcde",
+        "1-3 b: cdefg",
+        "2-9 c: ccccccccc"
+      };
+      Assert.AreEqual("1", s.SolvePartB(input));
     }
   }
 }

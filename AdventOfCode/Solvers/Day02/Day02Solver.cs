@@ -16,13 +16,21 @@ namespace AdventOfCode.Solvers.Day02
         .Select(line => regex.Match(line))
         .Where(match => match.Success)
         .Select(match => ParseMatchEntry(match))
-        .Count(IsValidEntry)
+        .Count(IsValidCharacterCount)
         .ToString();
     }
 
     public string SolvePartB(IEnumerable<string> input)
     {
-      return "B";
+      string pattern = "^(\\d+)-(\\d+) (\\w{1}): (\\w+)$";
+      Regex regex = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+      return input
+        .Select(line => regex.Match(line))
+        .Where(match => match.Success)
+        .Select(match => ParseMatchEntry(match))
+        .Count(IsSingleMatchingCharacter)
+        .ToString();
     }
 
     private Entry ParseMatchEntry(Match match)
@@ -32,14 +40,14 @@ namespace AdventOfCode.Solvers.Day02
         Password = match.Groups[4].ToString(),
         Policy = new CorporatePolicy
         {
-          MinOccurences = Int32.Parse(match.Groups[1].Value),
-          MaxOccurences = Int32.Parse(match.Groups[2].Value),
+          MinIndex = Int32.Parse(match.Groups[1].Value),
+          MaxIndex = Int32.Parse(match.Groups[2].Value),
           RequiredCharacter = match.Groups[3].Value
         }
       };
     }
 
-    private bool IsValidEntry(Entry entry)
+    private bool IsValidCharacterCount(Entry entry)
     {
       int reducedLength = entry
         .Password
@@ -47,8 +55,17 @@ namespace AdventOfCode.Solvers.Day02
         .Length;
 
       int occurences = entry.Password.Length - reducedLength;
-      return entry.Policy.MinOccurences <= occurences
-        && entry.Policy.MaxOccurences >= occurences;
+      return entry.Policy.MinIndex <= occurences
+        && entry.Policy.MaxIndex >= occurences;
+    }
+
+    private bool IsSingleMatchingCharacter(Entry entry)
+    {
+      char target = entry.Policy.RequiredCharacter[0];
+      char a = entry.Password[entry.Policy.MinIndex - 1];
+      char b = entry.Password[entry.Policy.MaxIndex - 1];
+
+      return (a == target) ^ (b == target);
     }
   }
 }
