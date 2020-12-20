@@ -40,8 +40,8 @@ echo "using Microsoft.VisualStudio.TestTools.UnitTesting;"   >> $TEST_PATH
 echo ""                                                      >> $TEST_PATH
 echo "using System.Collections.Generic;"                     >> $TEST_PATH
 echo ""                                                      >> $TEST_PATH
-echo "using Solvers;"                                        >> $TEST_PATH
-echo "using Solvers.Day$1;"                                  >> $TEST_PATH
+echo "using AdventOfCode.Solvers;"                           >> $TEST_PATH
+echo "using AdventOfCode.Solvers.Day$1;"                     >> $TEST_PATH
 echo ""                                                      >> $TEST_PATH
 echo "namespace AdventOfCode.Tests.Solvers.Day$1"            >> $TEST_PATH
 echo "{"                                                     >> $TEST_PATH
