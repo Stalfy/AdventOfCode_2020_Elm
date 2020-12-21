@@ -25,7 +25,9 @@ namespace AdventOfCode.Solvers.Day04
         (passport) => ContainsRequiredFields(passport, requiredFields)
       };
 
-      return CountValidPassports(input, criterias).ToString();
+      return CreatePassports(input)
+        .Count(passport => criterias.All(c => c(passport)))
+        .ToString();
     }
 
     public string SolvePartB(IEnumerable<string> input)
@@ -45,16 +47,9 @@ namespace AdventOfCode.Solvers.Day04
         (passport) => ValidatePID(passport, pidRegex)
       };
 
-      return CountValidPassports(input, criterias).ToString();
-    }
-
-    private int CountValidPassports
-      (IEnumerable<string> input
-      , IEnumerable<Func<IDictionary<string, string>, bool>> criterias)
-    {
-      var validators = criterias.ToList();
       return CreatePassports(input)
-        .Count(passport => validators.All(v => v(passport)));
+        .Count(passport => criterias.All(c => c(passport)))
+        .ToString();
     }
 
     private IEnumerable<IDictionary<string, string>> CreatePassports(IEnumerable<string> input)
