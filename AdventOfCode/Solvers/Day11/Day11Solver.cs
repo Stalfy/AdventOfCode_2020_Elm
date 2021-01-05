@@ -12,14 +12,14 @@ namespace AdventOfCode.Solvers.Day11
     public string SolvePartA(IEnumerable<string> input)
     {
       var seatsMap = GetSeatsMap(input);
-      Stabilize(seatsMap, GetPart1Modifications);
+      Stabilize(seatsMap, GetImmediateSeatNeighborhoods, 4);
       return seatsMap.Values.Count(c => c == UsedSeat).ToString();
     }
 
     public string SolvePartB(IEnumerable<string> input)
     {
       var seatsMap = GetSeatsMap(input);
-      Stabilize(seatsMap, GetPart2Modifications);
+      Stabilize(seatsMap, GetClosestSeatNeighborhoods, 5);
       return seatsMap.Values.Count(c => c == UsedSeat).ToString();
     }
 
@@ -49,13 +49,15 @@ namespace AdventOfCode.Solvers.Day11
 
     private void Stabilize
       ( SeatsMap sm
-        , Func<SeatsMap, IEnumerable<Tuple<Tuple<int, int>, char>>> getModifications)
+      , Func<SeatsMap, IEnumerable<SeatNeighborhood>> getNeighborhoods
+      , int maxUsedNeighbors)
     {
       bool iterate = true;
+
+      List<SeatNeighborhood> neighborhoods = getNeighborhoods(sm).ToList();
       while (iterate)
       {
-        var modifications = getModifications(sm).ToList();
-
+        var modifications = GetModifications(sm, neighborhoods, maxUsedNeighbors).ToList();
         iterate = modifications.Any();
         foreach (var tuple in modifications)
         {
@@ -64,208 +66,215 @@ namespace AdventOfCode.Solvers.Day11
       }
     }
 
-    private IEnumerable<Tuple<Tuple<int, int>, char>> GetPart1Modifications(SeatsMap sm)
+    private IEnumerable<Tuple<Tuple<int, int>, char>> GetModifications
+      ( SeatsMap sm
+      , IEnumerable<SeatNeighborhood> neighborhoods
+      , int maxUsedNeighbors)
     {
-      foreach (Tuple<int, int> seat in sm.Keys)
+      foreach (SeatNeighborhood sn in neighborhoods)
       {
-        switch (sm[seat])
+        switch (sm[sn.Seat])
         {
-          case FreeSeat when GetSurroundingSeats(sm, seat).All(seat => sm[seat] == FreeSeat):
-            yield return Tuple.Create(seat, UsedSeat);
+          case FreeSeat when sn.Neighbors.All(seat => sm[seat] == FreeSeat):
+            yield return Tuple.Create(sn.Seat, UsedSeat);
             break;
-          case UsedSeat when GetSurroundingSeats(sm, seat).Count(seat => sm[seat] == UsedSeat) >= 4:
-            yield return Tuple.Create(seat, FreeSeat);
+          case UsedSeat when sn.Neighbors.Count(seat => sm[seat] == UsedSeat) >= maxUsedNeighbors:
+            yield return Tuple.Create(sn.Seat, FreeSeat);
             break;
         }
       }
     }
 
-    private IEnumerable<Tuple<int, int>> GetSurroundingSeats(SeatsMap sm, Tuple<int, int> seat)
+    private IEnumerable<SeatNeighborhood> GetImmediateSeatNeighborhoods(SeatsMap sm)
     {
-      for (int row = seat.Item1 - 1; row <= seat.Item1 + 1; row++)
+      List<SeatNeighborhood> neighborhoods = new List<SeatNeighborhood>();
+      foreach (Tuple<int, int> seat in sm.Seats)
       {
-        for (int col = seat.Item2 - 1; col <= seat.Item2 + 1; col++)
+        // Unrolling the cases for all eight directions.
+        SeatNeighborhood sn = new SeatNeighborhood(seat);
+
+        Tuple<int, int> candidate = Tuple.Create(seat.Item1 - 1, seat.Item2 - 1);
+        if (sm.ContainsKey(candidate))
         {
-          if ((row != seat.Item1 || col != seat.Item2) && sm.ContainsKey(row, col))
+          sn.SetNeighbor(Direction.TopLeft, candidate);
+        }
+
+        candidate = Tuple.Create(seat.Item1 - 1, seat.Item2);
+        if (sm.ContainsKey(candidate))
+        {
+          sn.SetNeighbor(Direction.Top, candidate);
+        }
+
+        candidate = Tuple.Create(seat.Item1 - 1, seat.Item2 + 1);
+        if (sm.ContainsKey(candidate))
+        {
+          sn.SetNeighbor(Direction.TopRight, candidate);
+        }
+
+        candidate = Tuple.Create(seat.Item1, seat.Item2 + 1);
+        if (sm.ContainsKey(candidate))
+        {
+          sn.SetNeighbor(Direction.Right, candidate);
+        }
+
+        candidate = Tuple.Create(seat.Item1 + 1, seat.Item2 + 1);
+        if (sm.ContainsKey(candidate))
+        {
+          sn.SetNeighbor(Direction.BottomRight, candidate);
+        }
+
+        candidate = Tuple.Create(seat.Item1 + 1, seat.Item2);
+        if (sm.ContainsKey(candidate))
+        {
+          sn.SetNeighbor(Direction.Bottom, candidate);
+        }
+
+        candidate = Tuple.Create(seat.Item1 + 1, seat.Item2 - 1);
+        if (sm.ContainsKey(candidate))
+        {
+          sn.SetNeighbor(Direction.BottomLeft, candidate);
+        }
+
+        candidate = Tuple.Create(seat.Item1, seat.Item2 - 1);
+        if (sm.ContainsKey(candidate))
+        {
+          sn.SetNeighbor(Direction.Left, candidate);
+        }
+
+        yield return sn;
+      }
+    }
+
+    private IEnumerable<SeatNeighborhood> GetClosestSeatNeighborhoods(SeatsMap sm)
+    {
+      List<SeatNeighborhood> neighborhoods = new List<SeatNeighborhood>();
+      foreach (Tuple<int, int> seat in sm.Seats)
+      {
+        SeatNeighborhood sn = new SeatNeighborhood(seat);
+        foreach (SeatNeighborhood neighborhood in neighborhoods)
+        {
+          if (TryGetDirection(neighborhood.Seat, seat, out var direction))
           {
-            yield return Tuple.Create(row, col);
+            Direction opposite = GetOppositeDirection(direction);
+            Tuple<int, int> neighbor = neighborhood.GetNeighbor(direction);
+            if (neighbor is Tuple<int, int>)
+            {
+              int neighborDist = GetManhattanDistance(neighbor, neighborhood.Seat);
+              int seatDist = GetManhattanDistance(seat, neighborhood.Seat);
+              if (seatDist < neighborDist)
+              {
+                neighborhood.SetNeighbor(direction, seat);
+                sn.SetNeighbor(opposite, neighborhood.Seat);
+              }
+            }
+            else
+            {
+              neighborhood.SetNeighbor(direction, seat);
+              sn.SetNeighbor(opposite, neighborhood.Seat);
+            }
           }
         }
+
+        neighborhoods.Add(sn);
       }
+
+      return neighborhoods;
     }
 
-    private IEnumerable<Tuple<Tuple<int, int>, char>> GetPart2Modifications(SeatsMap sm)
+    private bool TryGetDirection(Tuple<int, int> seatA, Tuple<int, int> seatB, out Direction dir)
     {
-      foreach (Tuple<int, int> seat in sm.Keys)
+      dir = Direction.Top;
+      bool found = false;
+
+      int drow = seatB.Item1 - seatA.Item1;
+      int dcol = seatB.Item2 - seatA.Item2;
+      if (drow == 0 && dcol != 0)
       {
-        switch (sm[seat])
+        found = true;
+        dir = dcol < 0 ? Direction.Left : Direction.Right;
+      }
+      else if (drow != 0 && dcol == 0)
+      {
+        found = true;
+        dir = drow < 0 ? Direction.Top : Direction.Bottom;
+      }
+      else if (drow != 0 && dcol != 0 && (drow == dcol || drow == -dcol))
+      {
+        found = true;
+        switch (drow < 0)
         {
-          case FreeSeat when GetAlignedSeats(sm, seat).All(seat => sm[seat] == FreeSeat):
-            yield return Tuple.Create(seat, UsedSeat);
+          case true when dcol < 0:
+            dir = Direction.TopLeft;
             break;
-          case UsedSeat when GetAlignedSeats(sm, seat).Count(seat => sm[seat] == UsedSeat) >= 5:
-            yield return Tuple.Create(seat, FreeSeat);
+          case true when dcol > 0:
+            dir = Direction.TopRight;
             break;
-        }
-      }
-    }
-
-    private IEnumerable<Tuple<int, int>> GetAlignedSeats(SeatsMap sm, Tuple<int, int> seat)
-    {
-      int maxRow = 0;
-      int minRow = int.MaxValue;
-      int maxCol = 0;
-      int minCol = int.MaxValue;
-
-      foreach (var s in sm.Keys)
-      {
-        if (s.Item1 > maxRow) maxRow = s.Item1;
-        if (s.Item1 < minRow) minRow = s.Item1;
-        if (s.Item2 > maxCol) maxCol = s.Item2;
-        if (s.Item2 < minCol) minCol = s.Item2;
-      }
-
-      // Right.
-      bool stop = false;
-      int row = seat.Item1;
-      int col = seat.Item2;
-      while (col < maxCol && !stop)
-      {
-        var alignedSeat = Tuple.Create(row, ++col);
-        if (sm.ContainsKey(alignedSeat))
-        {
-          stop = true;
-          yield return alignedSeat;
-        }
-      }
-
-      // Top Right.
-      stop = false;
-      row = seat.Item1;
-      col = seat.Item2;
-      while (col < maxCol && row > minRow && !stop)
-      {
-        var alignedSeat = Tuple.Create(--row, ++col);
-        if (sm.ContainsKey(alignedSeat))
-        {
-          stop = true;
-          yield return alignedSeat;
+          case false when dcol < 0:
+            dir = Direction.BottomLeft;
+            break;
+          case false when dcol > 0:
+            dir = Direction.BottomRight;
+            break;
         }
       }
       
-      // Top.
-      stop = false;
-      row = seat.Item1;
-      col = seat.Item2;
-      while (row > minRow && !stop)
-      {
-        var alignedSeat = Tuple.Create(--row, col);
-        if (sm.ContainsKey(alignedSeat))
-        {
-          stop = true;
-          yield return alignedSeat;
-        }
-      }
-      
-      // Top Left.
-      stop = false;
-      row = seat.Item1;
-      col = seat.Item2;
-      while (col > minCol && row > minRow && !stop)
-      {
-        var alignedSeat = Tuple.Create(--row, --col);
-        if (sm.ContainsKey(alignedSeat))
-        {
-          stop = true;
-          yield return alignedSeat;
-        }
-      }
-
-      // Left.
-      stop = false;
-      row = seat.Item1;
-      col = seat.Item2;
-      while (col > minCol && !stop)
-      {
-        var alignedSeat = Tuple.Create(row, --col);
-        if (sm.ContainsKey(alignedSeat))
-        {
-          stop = true;
-          yield return alignedSeat;
-        }
-      }
-
-      // Bottom Left.
-      stop = false;
-      row = seat.Item1;
-      col = seat.Item2;
-      while (col > minCol && row < maxRow && !stop)
-      {
-        var alignedSeat = Tuple.Create(++row, --col);
-        if (sm.ContainsKey(alignedSeat))
-        {
-          stop = true;
-          yield return alignedSeat;
-        }
-      }
-
-      // Bottom.
-      stop = false;
-      row = seat.Item1;
-      col = seat.Item2;
-      while (row < maxRow && !stop)
-      {
-        var alignedSeat = Tuple.Create(++row, col);
-        if (sm.ContainsKey(alignedSeat))
-        {
-          stop = true;
-          yield return alignedSeat;
-        }
-      }
-
-      // Bottom Right.
-      stop = false;
-      row = seat.Item1;
-      col = seat.Item2;
-      while (col < maxCol && row < maxRow && !stop)
-      {
-        var alignedSeat = Tuple.Create(++row, ++col);
-        if (sm.ContainsKey(alignedSeat))
-        {
-          stop = true;
-          yield return alignedSeat;
-        }
-      }
+      return found;
     }
 
-    private class SeatsMap
+    private Direction GetOppositeDirection(Direction direction)
     {
-      private Dictionary<Tuple<int, int>, char> Data { get; set; }
-
-      public char this[int row, int col]
+      switch(direction)
       {
-        get => Data[GetKey(row, col)];
-        set => Data[GetKey(row, col)] = value;
+        case Direction.Right:       return Direction.Left;
+        case Direction.TopRight:    return Direction.BottomLeft;
+        case Direction.Top:         return Direction.Bottom;
+        case Direction.TopLeft:     return Direction.BottomRight;
+        case Direction.Left:        return Direction.Right;
+        case Direction.BottomLeft:  return Direction.TopRight;
+        case Direction.Bottom:      return Direction.Top;
+        case Direction.BottomRight: return Direction.TopLeft;
       }
 
-      public char this[Tuple<int, int> key]
+      throw new Exception("Invalid direction.");
+    }
+
+    private int GetManhattanDistance(Tuple<int, int> seatA, Tuple<int, int> seatB)
+    {
+      return Math.Abs(seatA.Item1 - seatB.Item1) + Math.Abs(seatA.Item2 - seatB.Item2);
+    }
+
+    private class SeatNeighborhood
+    {
+      private Dictionary<Direction, Tuple<int, int>> Neighborhood { get; set; }
+
+      public Tuple<int, int> Seat { get; }
+      public IEnumerable<Tuple<int, int>> Neighbors => Neighborhood.Values;
+
+      public SeatNeighborhood(Tuple<int, int> seat)
       {
-        get => Data[key];
-        set => Data[key] = value;
+        Seat = seat;
+        Neighborhood = new Dictionary<Direction, Tuple<int, int>>();
       }
 
-      public IEnumerable<Tuple<int, int>> Keys => Data.Keys;
-      public IEnumerable<char> Values => Data.Values;
-
-      public SeatsMap()
+      public bool HasNeighbor(Direction direction)
       {
-        Data = new Dictionary<Tuple<int, int>, char>();
+        return Neighborhood.ContainsKey(direction);
       }
 
-      private Tuple<int, int> GetKey(int row, int col) => Tuple.Create(row, col);
+      public Tuple<int, int> GetNeighbor(Direction direction)
+      {
+          if (Neighborhood.TryGetValue(direction, out var neighbor))
+          {
+            return neighbor;
+          }
 
-      public bool ContainsKey(int row, int col) => Data.ContainsKey(GetKey(row, col));
-      public bool ContainsKey(Tuple<int, int> key) => Data.ContainsKey(key);
+          return null;
+      }
+
+      public void SetNeighbor(Direction direction, Tuple<int, int> neighbor)
+      {
+        Neighborhood[direction] = neighbor;
+      }
     }
   }
 }
